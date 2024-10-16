@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sugar - Your Secret Dating Companion</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Dark mode styling */
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #121212;
+    }
+
+    .chat-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100vh;
+      background-color: #121212;
+    }
+
+    .chat-frame {
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      border: none;
+      background-color: #121212;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Remaining questions display */
+    .remaining-questions {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #ffcc00;
+      color: #000;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* Popup modal */
+    .modal {
+      display: none; /* Initially hidden */
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .modal-content h2 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .modal-content p {
+      color: #555;
+      font-size: 18px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .modal-content button:hover {
+      background-color: #45a049;
+    }
+
+    /* Plan buttons styling */
+    .modal-content .plan-btn {
+      margin: 10px 0;
+      padding: 12px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      display: block;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      transition: background-color 0.3s;
+    }
+
+    .modal-content .plan-btn:hover {
+      background-color: #45a049;
+    }
+
+    /* Styling for pricing plans */
+    .modal-content .plan-pricing {
+      font-size: 16px;
+      color: #888;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-frame">
+      <iframe src="https://www.chatbase.co/chatbot-iframe/FYjYT54t0K8eHgzoNM0hn"></iframe>
+    </div>
+  </div>
+
+  <!-- Display remaining questions -->
+  <div class="remaining-questions" id="remainingQuestions">Questions left: 5</div>
+
+  <!-- Initial Popup Modal for Plan Information -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <h2>Welcome to Sugar!</h2>
+      <p>
+        This is your secret dating companion. You’re on the free plan, which allows 5 free questions per day. Upgrade for unlimited questions or Sugar Daddy advice!
+      </p>
+      <p>
+        <strong>Plans:</strong><br>
+        - Unlimited questions: $9.99/month or $99.99/year<br>
+        - Sugar Daddy advice: $49/month or $550/year
+      </p>
+      <button onclick="closeInfoModal()">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Payment Modal for after 5 questions -->
+  <div class="modal" id="paymentModal" style="display: none;">
+    <div class="modal-content">
+      <h2>Upgrade to Unlimited Questions</h2>
+      <p>You've reached your limit of 5 questions. Choose one of our plans to continue:</p>
+      <button class="plan-btn" onclick="upgradeToUnlimited()">Unlimited: $9.99/month</button>
+      <button class="plan-btn" onclick="upgradeToYearly()">Unlimited: $99.99/year</button>
+      <button class="plan-btn" onclick="upgradeToSugarDaddy()">Sugar Daddy Advice: $49/month</button>
+      <button class="plan-btn" onclick="upgradeToSugarDaddyYearly()">Sugar Daddy Advice: $550/year</button>
+      <div class="plan-pricing">* All plans are billed securely via Stripe.</div>
+    </div>
+  </div>
+
+  <script>
+    let questionsLeft = 5;
+
+    // Display the initial information modal on page load
+    window.onload = function() {
+      showInfoModal();  // Show the welcome modal when the page loads
+      updateQuestionsDisplay();
+    };
+
+    function showInfoModal() {
+      const infoModal = document.getElementById('infoModal');
+      infoModal.style.display = 'flex'; // Show the modal
+    }
+
+    function closeInfoModal() {
+      const infoModal = document.getElementById('infoModal');
+      infoModal.style.display = 'none'; // Hide the modal when 'Got it!' is clicked
+    }
+
+    function updateQuestionsDisplay() {
+      const remainingQuestionsDisplay = document.getElementById('remainingQuestions');
+      remainingQuestionsDisplay.textContent = `Questions left: ${questionsLeft}`;
+    }
+
+    function showPaymentModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'flex'; // Show the payment modal
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('paymentModal');
+      modal.style.display = 'none'; // Hide the modal
+    }
+
+    // Track the number of questions and show payment modal after 5th question
+    function sendMessage() {
+      if (questionsLeft > 0) {
+        questionsLeft--;
+        updateQuestionsDisplay();
+
+        if (questionsLeft === 0) {
+          showPaymentModal();
+        }
+      } else {
+        showPaymentModal();
+      }
+    }
+
+    // Stripe payment integration for different plans
+    function upgradeToUnlimited() {
+      createCheckoutSession('price_xxxx'); // Replace with your price ID for $9.99/month
+    }
+
+    function upgradeToYearly() {
+      createCheckoutSession('price_xxxx'); // Replace with your price ID for $99.99/year
+    }
+
+    function upgradeToSugarDaddy() {
+      createCheckoutSession('price_xxxx'); // Replace with your price ID for $49/month Sugar Daddy advice
+    }
+
+    function upgradeToSugarDaddyYearly() {
+      createCheckoutSession('price_xxxx'); // Replace with your price ID for $550/year Sugar Daddy advice
+    }
+
+    function createCheckoutSession(priceId) {
+      fetch('/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: priceId,
+        }),
+      })
+      .then(response => response.json())
+      .then(session => {
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      })
+      .then(result => {
+        if (result.error) {
+          alert(result.error.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
+</body>
+</html>
